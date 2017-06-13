@@ -130,7 +130,7 @@ void bilinearInterpolate(const uchar input[], int xSize, int ySize, uchar output
 
 		}
 	}
-
+	
 	for (int i = 0; i < newYSize / 2; i++) 
 	{
 		for (int j = 0; j < newXSize / 2; j++) 
@@ -157,13 +157,13 @@ void bilinearInterpolate(const uchar input[], int xSize, int ySize, uchar output
 				a * b * U_old[f * xSize / 2 + d];
 
 			V_new[i * newXSize / 2 + j] =
-				(1 - a) * (1 - b) * V_new[m * xSize / 2 + k] +
-				(1 - a) * b * V_new[m * xSize / 2 + d] +
-				a * (1 - b) * V_new[f * xSize / 2 + k] +
-				a * b * V_new[f * xSize / 2 + d];
+				(1 - a) * (1 - b) * V_old[m * xSize / 2 + k] +
+				(1 - a) * b * V_old[m * xSize / 2 + d] +
+				a * (1 - b) * V_old[f * xSize / 2 + k] +
+				a * b * V_old[f * xSize / 2 + d];
 		}
 	}
-
+	
 	// revert from YUV to RGB
 	YUV420toRGB(Y_new, U_new, V_new, newXSize, newYSize, output);
 
@@ -238,6 +238,7 @@ void imageRotate(const uchar input[], int xSize, int ySize, uchar output[], int 
 			}
 		}
 	}
+
 	// revert from YUV to RGB
 	YUV420toRGB(Y_new, U_new, V_new, xSize, ySize, output);
 
