@@ -4,12 +4,20 @@
 
 #include <QDebug>
 
+int scale(int x, int y)
+{
+	return (x + y - 1) & ~(y - 1);
+}
+
 void imageProcessingFun(const QString& progName, QImage* const outImgs, const QImage* const inImgs, const QVector<double>& params) 
 {
 	int X_SIZE = inImgs->width();
 	int Y_SIZE = inImgs->height();
 
+	int X_SIZE_NEW, Y_SIZE_NEW;
+
 	/* NOTE: Calculate output image resolution and construct output image object */
+	
 
 	if(progName == "Sample and hold") 
 	{	
@@ -17,9 +25,12 @@ void imageProcessingFun(const QString& progName, QImage* const outImgs, const QI
 		/* Vertical scale factor is params[0] */
 		/* Horizontal scale factor is params[1] */
 
-		/* TO DO: Calculate output image resolution and construct output image object */
+		X_SIZE_NEW = scale(X_SIZE * params[1], 4);
+		Y_SIZE_NEW = scale(X_SIZE * params[0], 4);
 
-		/* TO DO: Perform Sample and hold interpolation  */
+		new (outImgs) QImage(X_SIZE_NEW, Y_SIZE_NEW, inImgs->format());
+
+		sampleAndHold(inImgs->bits(), X_SIZE, Y_SIZE, outImgs->bits(), X_SIZE_NEW, Y_SIZE_NEW);
 
 
 	}
@@ -29,9 +40,12 @@ void imageProcessingFun(const QString& progName, QImage* const outImgs, const QI
 		/* Vertical scale factor is params[0] */
 		/* Horizontal scale factor is params[1] */
 
-		/* TO DO: Calculate output image resolution and construct output image object */
+		X_SIZE_NEW = scale(X_SIZE * params[1], 4);
+		Y_SIZE_NEW = scale(X_SIZE * params[0], 4);
 
-		/* TO DO: Perform Bilinear interpolation  */
+		new (outImgs) QImage(X_SIZE_NEW, Y_SIZE_NEW, inImgs->format());
+
+		bilinearInterpolate(inImgs->bits(), X_SIZE, Y_SIZE, outImgs->bits(), X_SIZE_NEW, Y_SIZE_NEW);
 	}
 	else if (progName == "Bicubic")
 	{
@@ -39,9 +53,12 @@ void imageProcessingFun(const QString& progName, QImage* const outImgs, const QI
 		/* Vertical scale factor is params[0] */
 		/* Horizontal scale factor is params[1] */
 
-		/* TO DO: Calculate output image resolution and construct output image object */
+		X_SIZE_NEW = scale(X_SIZE * params[1], 4);
+		Y_SIZE_NEW = scale(X_SIZE * params[0], 4);
 
-		/* TO DO: Perform Bicubic interpolation  */
+		new (outImgs) QImage(X_SIZE_NEW, Y_SIZE_NEW, inImgs->format());
+
+		bicubicInterpolate((uchar*)inImgs->bits(), X_SIZE, Y_SIZE, outImgs->bits(), X_SIZE_NEW, Y_SIZE_NEW);
 
 	}
 	else if(progName == "Rotation") 
@@ -50,9 +67,9 @@ void imageProcessingFun(const QString& progName, QImage* const outImgs, const QI
 		/* Rotation angle in degrees is params[0]*/
 		/* Center of rotation coordinates are (XSIZE/2, YSIZE/2) */
 
-		/* TO DO: Construct output image object */
+		new (outImgs) QImage(X_SIZE, Y_SIZE, inImgs->format());
 
-		/* TO DO: Perform image rotation */
+		imageRotate((uchar*)inImgs->bits(), X_SIZE, Y_SIZE, outImgs->bits(), X_SIZE / 2, Y_SIZE / 2, params[0]);
 	
 	}
 	else if (progName == "Rotation Bilinear") 
@@ -61,9 +78,9 @@ void imageProcessingFun(const QString& progName, QImage* const outImgs, const QI
 		/* Rotation angle in degrees is params[0]*/
 		/* Center of rotation coordinates are (XSIZE/2, YSIZE/2) */
 
-		/* TO DO: Construct output image object */
+		new (outImgs) QImage(X_SIZE, Y_SIZE, inImgs->format());
 
-		/* TO DO: Perform image rotation with bilinear interpolation */
+		imageRotateBilinear((uchar*)inImgs->bits(), X_SIZE, Y_SIZE, outImgs->bits(), X_SIZE / 2, Y_SIZE / 2, (double)params[0]);
 	}
 
 }
