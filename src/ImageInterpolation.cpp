@@ -253,5 +253,110 @@ void imageRotate(const uchar input[], int xSize, int ySize, uchar output[], int 
 
 void imageRotateBilinear(const uchar input[], int xSize, int ySize, uchar output[], int m, int n, double angle)
 {
-	/* TO DO */
+	// allocate
+	uchar* Y_old = new uchar[xSize * ySize]();
+	char* U_old = new char[xSize * ySize / 4]();
+	char* V_old = new char[xSize * ySize / 4]();
+
+	uchar* Y_new = new uchar[xSize * ySize]();
+	char* U_new = new char[xSize * ySize / 4]();
+	char* V_new = new char[xSize * ySize / 4]();
+
+	// convert from RGB to YUV
+	RGBtoYUV420(input, xSize, ySize, Y_old, U_old, V_old);
+
+	// theta calculation
+	double t = 3.1415 * angle / 180;
+
+	int f = 0;
+	int d = 0;
+
+	int xbase = 0;
+	int ybase = 0;
+
+	double a = 0;
+	double b = 0;
+
+	for (int i = 0; i < ySize; i++) //y
+	{
+		for (int j = 0; j < xSize; j++) //x
+		{
+			f = (int)(i * cos(t) + j * sin(t) - m * sin(t) - n * cos(t) + n);
+			d = (int)(j * cos(t) - i * sin(t) - m * cos(t) + n * sin(t) + m);
+			
+			xbase = (int)floor(d),
+			ybase = (int)floor(f);
+
+			if (d >= xSize || d < 0 || f >= ySize || f < 0)
+			{
+				Y_new[i * xSize + j] = 0;
+			}
+			else if (d != xbase || f != ybase)
+			{
+				a = f - ybase,
+				b = d - xbase;
+
+				Y_new[i * xSize + j] =
+					(1 - a) * (1 - b) * Y_old[ybase * xSize + xbase] +
+					(1 - a) * b * Y_old[(ybase + 1) * xSize + xbase] +
+					a * (1 - b) * Y_old[ybase * xSize + (xbase + 1)] +
+					a * b * Y_old[(ybase + 1) * xSize + (xbase + 1)];
+			}
+			else
+			{
+				Y_new[i * xSize + j] = Y_old[(int)(f * xSize + d)];
+			}
+		}
+	}
+
+	for (int i = 0; i < ySize / 2; i++)
+	{
+		for (int j = 0; j < xSize / 2; j++)
+		{
+			f = (int)(i * cos(t) + j * sin(t) - m / 2 * sin(t) - n / 2 * cos(t) + n / 2);
+			d = (int)(j * cos(t) - i * sin(t) - m / 2 * cos(t) + n / 2 * sin(t) + m / 2);
+
+			if (d >= xSize / 2 || d < 0 || f >= ySize / 2 || f < 0)
+			{
+				U_new[i * xSize / 2 + j] = 0;
+				V_new[i * xSize / 2 + j] = 0;
+			}
+			else if (d != floor(d) || f != floor(f))
+			{
+				xbase = floor(d),
+				ybase = floor(f);
+
+				a = f - ybase;
+				b = d - xbase;
+
+					U_new[i * xSize / 2 + j] =
+					(1 - a) * (1 - b) * U_old[ybase * xSize / 2 + xbase] +
+					(1 - a) * b * U_old[(ybase + 1) * xSize / 2 + xbase] +
+					a * (1 - b) * U_old[ybase * xSize / 2 + (xbase + 1)] +
+					a * b * U_old[(ybase + 1) * xSize / 2 + (xbase + 1)];
+
+					V_new[i * xSize / 2 + j] =
+					(1 - a) * (1 - b) * V_old[ybase * xSize / 2 + xbase] +
+					(1 - a) * b * V_old[(ybase + 1) * xSize / 2 + xbase] +
+					a * (1 - a) * V_old[ybase * xSize / 2 + (xbase + 1)] +
+					a * b * V_old[(ybase + 1) * xSize / 2 + (xbase + 1)];
+			}
+			else
+			{
+				U_new[i * xSize / 2 + j] = U_old[(int)(f * xSize / 2 + d)];
+				V_new[i * xSize / 2 + j] = V_old[(int)(f * xSize / 2 + d)];
+			}
+		}
+	}
+	
+	// revert from YUV to RGB
+	YUV420toRGB(Y_new, U_new, V_new, xSize, ySize, output);
+
+	delete[] Y_old;
+	delete[] U_old;
+	delete[] V_old;
+
+	delete[] Y_new;
+	delete[] U_new;
+	delete[] V_new;
 }
